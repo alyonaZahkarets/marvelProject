@@ -1,6 +1,6 @@
 import { Component } from "react";
-import MarvelService from "../../services/MarvelService";
 
+import MarvelService from "../../services/MarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import Skeleton from "../skeleton/Skeleton";
@@ -41,11 +41,16 @@ class CharInfo extends Component {
   };
 
   onCharLoaded = (char) => {
-    this.setState({ char, loading: false });
+    this.setState({
+      char,
+      loading: false,
+    });
   };
 
   onCharLoading = () => {
-    this.setState({ loading: true });
+    this.setState({
+      loading: true,
+    });
   };
 
   onError = () => {
@@ -65,7 +70,10 @@ class CharInfo extends Component {
 
     return (
       <div className="char__info">
-        {skeleton} {errorMessage} {spinner} {content}
+        {skeleton}
+        {errorMessage}
+        {spinner}
+        {content}
       </div>
     );
   }
@@ -102,9 +110,11 @@ const View = ({ char }) => {
       <div className="char__comics">Comics:</div>
       <ul className="char__comics-list">
         {comics.length > 0 ? null : "There is no comics with this character"}
-        {comics.slice(0, 9).map((item, i) => {
+        {comics.map((item, i) => {
+          // eslint-disable-next-line
+          if (i > 9) return;
           return (
-            <li className="char__comics-item" key={i}>
+            <li key={i} className="char__comics-item">
               {item.name}
             </li>
           );
