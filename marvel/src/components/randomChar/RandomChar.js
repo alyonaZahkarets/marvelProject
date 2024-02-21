@@ -1,59 +1,31 @@
 import { useState, useEffect } from "react";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import MarvelService from "../../services/MarvelService";
+import useMarvelService from "../../services/MarvelService";
 
 import "./randomChar.scss";
 import mjolnir from "../../resources/img/mjolnir.png";
 
-const RandomChar = (props) => {
-  const [char, setChar] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  // state = {
-  //   char: {},
-  //   loading: true,
-  //   error: false,
-  // };
-
-  const marvelService = new MarvelService();
+const RandomChar = () => {
+  const [char, setChar] = useState(null);
+  const { loading, error, getCharacter, clearError } = useMarvelService();
 
   useEffect(() => {
     updateChar();
+    const timerId = setInterval(updateChar, 50000);
+
+    return () => clearInterval(timerId);
     // eslint-disable-next-line
   }, []);
 
-  // componentDidMount() {
-  //   this.updateChar();
-  //   // console.log("mount");
-  // }
-  // componentWillUnmount() {
-  //   // console.log("unmount");
-  // }
-
   const onCharLoaded = (char) => {
-    setLoading(false);
     setChar(char);
   };
 
-  const onCharLoading = () => {
-    setLoading(true);
-  };
-
-  const onError = () => {
-    setLoading(false);
-    setError(true);
-    // this.setState({
-    //   loading: false,
-    //   error: true,
-    // });
-  };
-
   const updateChar = () => {
+    clearError();
     const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
-    onCharLoading();
-    marvelService.getCharacter(id).then(onCharLoaded).catch(onError);
+    getCharacter(id).then(onCharLoaded);
   };
 
   const reducedText = (text, maxLength) => {
@@ -62,7 +34,7 @@ const RandomChar = (props) => {
 
   const errorMessage = error ? <ErrorMessage /> : null;
   const spinner = loading ? <Spinner /> : null;
-  const content = !(loading || error) ? (
+  const content = !(loading || error || !char) ? (
     <View char={char} reducedText={reducedText} />
   ) : null;
 

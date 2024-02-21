@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-
-import MarvelService from "../../services/MarvelService";
+import { Link } from "react-router-dom";
+import useMarvelService from "../../services/MarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import Skeleton from "../skeleton/Skeleton";
@@ -9,10 +9,8 @@ import "./charInfo.scss";
 
 const CharInfo = (props) => {
   const [char, setChar] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
 
-  const marvelService = new MarvelService();
+  const { loading, error, getCharacter, clearError } = useMarvelService();
 
   useEffect(() => {
     updateChar();
@@ -24,24 +22,12 @@ const CharInfo = (props) => {
     if (!charId) {
       return;
     }
-
-    onCharLoading();
-
-    marvelService.getCharacter(charId).then(onCharLoaded).catch(onError);
+    clearError();
+    getCharacter(charId).then(onCharLoaded);
   };
 
   const onCharLoaded = (char) => {
-    setLoading(false);
     setChar(char);
-  };
-
-  const onCharLoading = () => {
-    setLoading(true);
-  };
-
-  const onError = () => {
-    setLoading(false);
-    setError(true);
   };
 
   const skeleton = char || loading || error ? null : <Skeleton />;
@@ -91,11 +77,11 @@ const View = ({ char }) => {
       <ul className="char__comics-list">
         {comics.length > 0 ? null : "There is no comics with this character"}
         {comics.map((item, i) => {
-          // eslint-disable-next-line
-          if (i > 9) return;
+          const urlParts = item.resourceURI.split("/");
+          const comicId = urlParts[urlParts.length - 1];
           return (
             <li key={i} className="char__comics-item">
-              {item.name}
+              <Link to={`/comics/${comicId}`}>{item.name}</Link>
             </li>
           );
         })}
