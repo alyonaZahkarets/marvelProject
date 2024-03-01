@@ -1,0 +1,92 @@
+.search__panel {
+    padding: 30px 0 30px 0;
+    position: relative;
+
+    &-label {
+        font-size: 23px;
+    }
+
+    &-form {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        font-size: 24px;
+        line-height: 32px;
+
+        &-input {
+            font-size: 18px;
+            line-height: 24px;
+            width: 655px;
+        }
+
+        &-results {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            width: calc(100% - 20px);
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(126, 7, 7, 0.1);
+            overflow-y: auto;
+            z-index: 9;
+            height: 550px;
+            width: 650px;
+            padding: 10px;
+
+
+            &-wrapper {
+                display: flex;
+                gap: 10px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #8e141419;
+
+                img {
+                    height: 45px;
+                    width: 45px;
+                }
+            }
+
+            &-descr {
+                font-size: 18px;
+                line-height: 24px;
+            }
+        }
+    }
+}
+
+// .search__panel .overlay-visible .search__panel-form .search__panel-form-results {
+//     display: block;
+// }
+
+// .search__panel .search__panel-form .search__panel-form-results {
+//     position: absolute;
+//     top: calc(100% + 10px);
+//     left: 0;
+//     width: calc(100% - 20px);
+//     background-color: #fff;
+//     border: 1px solid #ccc;
+//     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//     overflow-y: auto;
+//     display: none;
+//     z-index: 999;
+// }
+
+// .search__panel .search__panel-form .search__panel-form-results-wrapper {
+//     display: flex;
+//     align-items: center;
+//     padding: 10px;
+//     border-bottom: 1px solid #8e141419;
+//     text-decoration: none;
+//     color: inherit;
+// }
+
+// .search__panel .search__panel-form .search__panel-form-results-wrapper img {
+//     height: 45px;
+//     width: 45px;
+//     margin-right: 10px;
+// }
+
+// .search__panel .search__panel-form .search__panel-form-results-desc {
+//     font-size: 18px;
+//     line-height: 24px;
+// }
