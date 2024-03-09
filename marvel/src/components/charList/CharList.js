@@ -1,19 +1,35 @@
-import { useState, useEffect, useRef } from "react";
-import { TransitionGroup, CSSTransition } from "react-transition-group";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 
+import useMarvelService from "../../services/MarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import useMarvelService from "../../services/MarvelService";
+
 import "./charList.scss";
+
+const setContent = (process, Component, newItemLoading) => {
+  switch (process) {
+    case "waiting":
+      return <Spinner />;
+    case "loading":
+      return newItemLoading ? <Component /> : <Spinner />;
+    case "confirmed":
+      return <Component />;
+    case "error":
+      return <ErrorMessage />;
+    default:
+      throw new Error("Unexpected process state");
+  }
+};
 
 const CharList = (props) => {
   const [charList, setCharList] = useState([]);
-  const [newItemLoading, setNewItemLoading] = useState(false);
+  const [newItemLoading, setnewItemLoading] = useState(false);
   const [offset, setOffset] = useState(210);
   const [charEnded, setCharEnded] = useState(false);
 
-  const { loading, error, getAllCharacters } = useMarvelService();
+  const { getAllCharacters, process, setProcess } = useMarvelService();
 
   useEffect(() => {
     onRequest(offset, true);
@@ -21,33 +37,26 @@ const CharList = (props) => {
   }, []);
 
   const onRequest = (offset, initial) => {
-    initial ? setNewItemLoading(false) : setNewItemLoading(true);
-    getAllCharacters(offset).then(onCharListLoaded);
+    initial ? setnewItemLoading(false) : setnewItemLoading(true);
+    getAllCharacters(offset)
+      .then(onCharListLoaded)
+      .then(() => setProcess("confirmed"));
   };
 
-  const onCharListLoaded = (newCharList) => {
+  const onCharListLoaded = async (newCharList) => {
     let ended = false;
     if (newCharList.length < 9) {
       ended = true;
     }
-
-    setCharList((charList) => [...charList, ...newCharList]);
-    setNewItemLoading((newItemLoading) => false);
-    setOffset((offset) => offset + 9);
-    setCharEnded((charEnded) => ended);
+    setCharList([...charList, ...newCharList]);
+    setnewItemLoading(false);
+    setOffset(offset + 9);
+    setCharEnded(ended);
   };
-
-  console.log("charList!");
 
   const itemRefs = useRef([]);
 
   const focusOnItem = (id) => {
-    // Я реализовал вариант чуть сложнее, и с классом и с фокусом
-    // Но в теории можно оставить только фокус, и его в стилях использовать вместо класса
-    // На самом деле, решение с css-классом можно сделать, вынеся персонажа
-    // в отдельный компонент. Но кода будет больше, появится новое состояние
-    // и не факт, что мы выиграем по оптимизации за счет бОльшего кол-ва элементов
-    // По возможности, не злоупотребляйте рефами, только в крайних случаях
     itemRefs.current.forEach((item) =>
       item.classList.remove("char__item_selected")
     );
@@ -55,7 +64,7 @@ const CharList = (props) => {
     itemRefs.current[id].focus();
   };
 
-  function renderItems(arr) {
+  const renderItems = (arr) => {
     const items = arr.map((item, i) => {
       let imgStyle = { objectFit: "cover" };
       if (
@@ -66,16 +75,20 @@ const CharList = (props) => {
       }
 
       return (
-        <CSSTransition key={item.id} classNames="char__item" timeout={500}>
+        <CSSTransition key={item.id} timeout={500} classNames="char__item">
           <li
             className="char__item"
             tabIndex={0}
-            ref={(el) => {
-              itemRefs.current[i] = el;
-            }} ////// щось не так
+            ref={(el) => (itemRefs.current[i] = el)}
             onClick={() => {
               props.onCharSelected(item.id);
               focusOnItem(i);
+            }}
+            onKeyPress={(e) => {
+              if (e.key === " " || e.key === "Enter") {
+                props.onCharSelected(item.id);
+                focusOnItem(i);
+              }
             }}
           >
             <img src={item.thumbnail} alt={item.name} style={imgStyle} />
@@ -84,28 +97,28 @@ const CharList = (props) => {
         </CSSTransition>
       );
     });
-    // А эта конструкция вынесена для центровки спиннера/ошибки
+
     return (
       <ul className="char__grid">
         <TransitionGroup component={null}>{items}</TransitionGroup>
       </ul>
     );
-  }
+  };
 
-  const items = renderItems(charList);
+  const elements = useMemo(() => {
+    return setContent(process, () => renderItems(charList), newItemLoading);
+    // eslint-disable-next-line
+  }, [process]);
 
-  const errorMessage = error ? <ErrorMessage /> : null;
-  const spinner = loading && !newItemLoading ? <Spinner /> : null;
-
+  // TransitionGroup работать не будет за счет постоянного пересоздания компонента
+  // разбор в следующем уроке
   return (
     <div className="char__list">
-      {errorMessage}
-      {spinner}
-      {items}
+      {elements}
       <button
-        className="button button__main button__long"
         disabled={newItemLoading}
         style={{ display: charEnded ? "none" : "block" }}
+        className="button button__main button__long"
         onClick={() => onRequest(offset)}
       >
         <div className="inner">load more</div>

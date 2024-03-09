@@ -1,7 +1,7 @@
 import { useHttp } from "../hooks/http.hook";
 
 const useMarvelService = () => {
-  const { loading, request, error, clearError } = useHttp();
+  const { request, clearError, process, setProcess } = useHttp();
 
   const _apiBase = "https://gateway.marvel.com:443/v1/public/";
   const _apiKey = "apikey=35e2adbc5d03d90ded013921723230bb";
@@ -47,7 +47,10 @@ const useMarvelService = () => {
     return {
       id: char.id,
       name: char.name,
-      description: char.description,
+      description:
+        char.description.length > 200
+          ? char.description.substring(0, 200) + "..."
+          : char.description || "There is no description",
       thumbnail: char.thumbnail.path + "." + char.thumbnail.extension,
       homepage: char.urls[0].url,
       wiki: char.urls[1].url,
@@ -77,9 +80,9 @@ const useMarvelService = () => {
     getCharacter,
     getAllComics,
     getComic,
-    loading,
-    error,
     clearError,
+    process,
+    setProcess,
   };
 };
 

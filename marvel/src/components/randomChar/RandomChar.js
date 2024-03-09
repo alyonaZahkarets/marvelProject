@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import Spinner from "../spinner/Spinner";
-import ErrorMessage from "../errorMessage/ErrorMessage";
+
 import useMarvelService from "../../services/MarvelService";
+import setContent from "../../utils/setContent";
 
 import "./randomChar.scss";
 import mjolnir from "../../resources/img/mjolnir.png";
 
 const RandomChar = () => {
   const [char, setChar] = useState(null);
-  const { loading, error, getCharacter, clearError } = useMarvelService();
+  const { getCharacter, clearError, process, setProcess } = useMarvelService();
 
   useEffect(() => {
     updateChar();
@@ -25,24 +25,20 @@ const RandomChar = () => {
   const updateChar = () => {
     clearError();
     const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
-    getCharacter(id).then(onCharLoaded);
+    getCharacter(id)
+      .then(onCharLoaded)
+      .then(() => setProcess("confirmed"));
   };
 
-  const reducedText = (text, maxLength) => {
-    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-  };
-
-  const errorMessage = error ? <ErrorMessage /> : null;
-  const spinner = loading ? <Spinner /> : null;
-  const content = !(loading || error || !char) ? (
-    <View char={char} reducedText={reducedText} />
-  ) : null;
+  // const errorMessage = error ? <ErrorMessage /> : null;
+  // const spinner = loading ? <Spinner /> : null;
+  // const content = !(loading || error || !char) ? (
+  //   <View char={char} reducedText={reducedText} />
+  // ) : null;
 
   return (
     <div className="randomchar">
-      {errorMessage}
-      {spinner}
-      {content}
+      {setContent(process, View, char)}
       <div className="randomchar__static">
         <p className="randomchar__title">
           Random character for today!
@@ -59,13 +55,8 @@ const RandomChar = () => {
   );
 };
 
-const View = ({ char, reducedText }) => {
-  const { name, description, thumbnail, homepage, wiki } = char;
-
-  const reducedDescription = reducedText(
-    description || "There are no description about this character.",
-    200
-  );
+const View = ({ data }) => {
+  const { name, description, thumbnail, homepage, wiki } = data;
 
   let imgStyle = { objectFit: "cover" };
   if (
@@ -85,7 +76,7 @@ const View = ({ char, reducedText }) => {
       />
       <div className="randomchar__info">
         <p className="randomchar__name">{name}</p>
-        <p className="randomchar__descr">{reducedDescription}</p>
+        <p className="randomchar__descr">{description}</p>
         <div className="randomchar__btns">
           <a href={homepage} className="button button__main">
             <div className="inner">homepage</div>
